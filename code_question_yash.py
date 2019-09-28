@@ -16,30 +16,19 @@ SCOPES = [
     'https://www.googleapis.com/auth/drive.file'
 ]
 
-def authorize_login():
-    creds = None
-    if os.path.exists('token.pickle'):
-        with open('token.pickle', 'rb') as token:
-            creds = pickle.load(token)
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            flow = InstalledAppFlow.from_client_secrets_file(
-                'credentials.json', SCOPES)
-            creds = flow.run_local_server(port=0)
-        with open('token.pickle', 'wb') as token:
-            pickle.dump(creds, token)
-
 def authorize_login_oauth():
     store = file.Storage('storage.json')
     creds = store.get()
+    # Add your conditional here. I removed it in order to test different scopes
+    # You can change 'credentials.json' to 'client_id.json'
     flow = client.flow_from_clientsecrets('credentials.json', SCOPES)
     creds = tools.run_flow(flow, store)
     drive_service = discovery.build('drive', 'v3', http=creds.authorize(Http()))
     return drive_service
 
 def get_file_id(drive_service):
+    # You can take this out of the loop. I just used it to pull the first file
+    # I could find on my drive.
     results = drive_service.files().list(
         pageSize=10,
         fields="nextPageToken, files(id, name)").execute()
@@ -53,6 +42,8 @@ def get_file_id(drive_service):
     return items[0]['id']
 
 def download_file(drive_service, file_id):
+    # Using files().get per SO
+    # --> https://stackoverflow.com/questions/46302540/google-drive-export-non-google-doc-file
     request = drive_service.files().get(fileId=file_id)
     fh = io.BytesIO()
     downloader = MediaIoBaseDownload(fh, request)
