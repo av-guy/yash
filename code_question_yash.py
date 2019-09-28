@@ -45,7 +45,7 @@ def download_file(drive_service, file_id):
     # Using files().get per SO
     # --> https://stackoverflow.com/questions/46302540/google-drive-export-non-google-doc-file
     request = drive_service.files().get(fileId=file_id)
-    fh = io.BytesIO()
+    fh = io.FileIO('test.pdf', 'wb')
     downloader = MediaIoBaseDownload(fh, request)
     done = False
     while done is False:
@@ -55,4 +55,4 @@ def download_file(drive_service, file_id):
 if __name__ == '__main__':
     drive_service = authorize_login_oauth()
     target_file = get_file_id(drive_service)
-    download_file(drive_service, target_file)
+    print(download_file(drive_service, target_file))
